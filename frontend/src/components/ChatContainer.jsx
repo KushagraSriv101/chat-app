@@ -45,49 +45,85 @@ const ChatContainer = () => {
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-auto">
+    <div className="flex-1 flex flex-col overflow-auto bg-base-100 text-base-content">
       <ChatHeader />
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
-          <div
-            key={message._id}
-            className={`chat ${message.senderId === authUser._id ? "chat-end" : "chat-start"}`}
-            ref={messageEndRef}
-          >
-            <div className=" chat-image avatar">
-              <div className="size-10 rounded-full border">
-                <img
-                  src={
-                    message.senderId === authUser._id
-                      ? authUser.profilePic || "/avatar.png"
-                      : selectedUser.profilePic || "/avatar.png"
-                  }
-                  alt="profile pic"
-                />
+      <div className="flex-1 overflow-y-auto p-6 space-y-3">
+        {messages.map((message, index) => {
+          const isSender = message.senderId === authUser._id;
+          const isOnlyImage = message.image && !message.text?.trim();
+
+          return (
+            <div
+              key={message._id || index}
+              className={`flex flex-col gap-1 max-w-full ${isSender ? "items-end" : "items-start"}`}
+              ref={messageEndRef}
+            >
+              <div className={`flex items-end gap-2 ${isSender ? "flex-row-reverse" : "flex-row"}`}>
+                {/* Profile Pic */}
+                <div className="flex items-end">
+                  <div className="size-9 rounded-full border shadow-sm overflow-hidden">
+                    <img
+                      src={
+                        isSender
+                          ? authUser.profilePic || "/avatar.png"
+                          : selectedUser.profilePic || "/avatar.png"
+                      }
+                      alt="profile pic"
+                      className="object-cover w-full h-full rounded-full"
+                    />
+                  </div>
+                </div>
+
+                {/* Message Content */}
+                {isOnlyImage ? (
+                  // Just the image
+                  <div className="max-w-[75%] overflow-hidden rounded-md">
+                    <img
+                      src={message.image}
+                      alt="Attachment"
+                      className="w-full max-h-[300px] object-cover rounded-lg border border-base-300"
+                    />
+                  </div>
+                ) : (
+                  // Message bubble
+                  <div
+                    className={`relative max-w-[75%] px-4 py-3 shadow-lg whitespace-pre-wrap break-words text-sm overflow-hidden ${
+                      isSender
+                        ? "bg-primary text-primary-content rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl rounded-br-md after:content-[''] after:absolute after:bottom-0 after:right-2 after:-mb-[5px] after:border-[6px] after:border-transparent after:border-t-[theme(colors.primary)]"
+                        : "bg-base-200 text-base-content rounded-tr-2xl rounded-tl-2xl rounded-br-2xl rounded-bl-md after:content-[''] after:absolute after:bottom-0 after:left-2 after:-mb-[5px] after:border-[6px] after:border-transparent after:border-t-base-200"
+                    }`}
+                  >
+                    {message.image && (
+                      <div className="overflow-hidden rounded-md mb-2">
+                        <img
+                          src={message.image}
+                          alt="Attachment"
+                          className="max-w-full h-auto object-cover"
+                        />
+                      </div>
+                    )}
+                    {message.text && <p>{message.text}</p>}
+                  </div>
+                )}
               </div>
-            </div>
-            <div className="chat-header mb-1">
-              <time className="text-xs opacity-50 ml-1">
+
+              {/* Timestamp */}
+              <span
+                className={`text-[10px] mt-1 ${
+                  isSender ? "text-base-content/60 pr-12 text-right" : "text-base-content/70 pl-12 text-left"
+                }`}
+              >
                 {formatMessageTime(message.createdAt)}
-              </time>
+              </span>
             </div>
-            <div className="chat-bubble flex flex-col">
-              {message.image && (
-                <img
-                  src={message.image}
-                  alt="Attachment"
-                  className="sm:max-w-[200px] rounded-md mb-2"
-                />
-              )}
-              {message.text && <p>{message.text}</p>}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <MessageInput />
     </div>
   );
 };
+
 export default ChatContainer;
